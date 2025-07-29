@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rock Paper Scissors</title>
+  <title>Irys Game - Rock Paper Scissors</title>
   <style>
     body {
       text-align: center;
@@ -15,13 +15,15 @@
       padding: 10px 20px;
     }
     .scoreboard {
-      margin-top: 20px;
       font-size: 18px;
+      margin-top: 20px;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>Rock Paper Scissors</h1>
+
+  <h1>Irys Game - Rock Paper Scissors</h1>
 
   <button onclick="play('rock')">🪨 Rock</button>
   <button onclick="play('paper')">📄 Paper</button>
@@ -58,12 +60,13 @@
       }
 
       document.getElementById("result").innerHTML =
-        `You chose <b>${userChoice}</b><br>Computer chose <b>${computerChoice}</b><br><strong>${result}</strong>`;
+        `You chose <b>${userChoice}</b> <br>Computer chose <b>${computerChoice}</b><br><strong>${result}</strong>`;
 
       document.getElementById("user-score").textContent = userScore;
       document.getElementById("computer-score").textContent = computerScore;
     }
   </script>
+
 </body>
 </html>
-commit Add scoreboard
+
