@@ -1,196 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Irys Game</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
       text-align: center;
-      background-color: #f5f5f5;
-      color: #222;
       padding: 20px;
     }
-
-    body.dark-mode {
-      background-color: #121212;
-      color: #f5f5f5;
+    .light-mode {
+      background-color: #f4f4f4;
+      color: #000;
     }
-
-    .game-btn {
-      font-size: 24px;
+    .game-container {
+      margin-top: 20px;
+    }
+    button {
       padding: 10px 20px;
       margin: 10px;
-      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
       border: none;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
     }
-
-    body.dark-mode .game-btn {
-      background-color: #333;
-      color: white;
+    #leaderboard {
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 10px;
     }
-
-    #result, #user-score, #comp-score {
-      font-size: 20px;
-      margin: 10px;
-    }
-
-    .switch {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-
-    .switch input {
-      display: none;
-    }
-
-    .slider {
-      width: 40px;
-      height: 20px;
-      background-color: #ccc;
-      border-radius: 20px;
-      display: inline-block;
-      position: relative;
-      cursor: pointer;
-    }
-
-    .slider::before {
-      content: "";
-      width: 18px;
-      height: 18px;
-      background-color: white;
-      border-radius: 50%;
-      position: absolute;
-      top: 1px;
-      left: 1px;
-      transition: 0.3s;
-    }
-
-    input:checked + .slider::before {
-      transform: translateX(20px);
-    }
-
-    input:checked + .slider {
-      background-color: #333;
-    }
-
-    #name-screen {
-      margin-top: 40px;
-    }
-
-    #name-screen input {
+    input[type="text"] {
       padding: 10px;
       font-size: 16px;
-      width: 200px;
-    }
-
-    #name-screen button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-left: 10px;
-      cursor: pointer;
+      border-radius: 6px;
+      margin: 10px;
     }
   </style>
 </head>
 <body>
+  <img id="irys-logo" src="https://irys.xyz/logo-light.svg" alt="Irys Logo" style="height: 60px; margin-bottom: 10px;" />
+  <h1>Irys Game 🎮</h1>
 
-  <!-- 🌙 Dark Mode Toggle -->
-  <label class="switch">
-    <input type="checkbox" id="theme-toggle">
-    <span class="slider round"></span>
-  </label>
-
-  <!-- 🎮 Name Entry -->
   <div id="name-screen">
     <input type="text" id="player-name" placeholder="Enter your name" />
     <button onclick="startGame()">Start</button>
   </div>
 
-  <!-- 👋 Welcome Message -->
   <h2 id="welcome-msg" style="display: none;"></h2>
 
-  <!-- 🧠 Game UI -->
-  <div id="game" style="display: none;">
-    <button class="game-btn" onclick="playGame('rock')">🪨 Rock</button>
-    <button class="game-btn" onclick="playGame('paper')">📄 Paper</button>
-    <button class="game-btn" onclick="playGame('scissors')">✂️ Scissors</button>
-
-    <p id="result">Make your move!</p>
+  <div class="game-container" id="game-area" style="display: none;">
     <p id="user-score">Player: 0</p>
     <p id="comp-score">Computer: 0</p>
 
-    <button onclick="resetGame()">🔄 Reset</button>
+    <div>
+      <button onclick="play('rock')">🪨 Rock</button>
+      <button onclick="play('paper')">📄 Paper</button>
+      <button onclick="play('scissors')">✂️ Scissors</button>
+    </div>
+
+    <p id="result"></p>
+    <button onclick="resetGame()">Reset</button>
+    <button onclick="toggleTheme()">Toggle Theme</button>
   </div>
 
-  <audio id="win-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-  <audio id="lose-sound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
-  <audio id="draw-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+  <div id="leaderboard">
+    <h3>🏆 Leaderboard</h3>
+    <ol id="leaderboard-list"></ol>
+  </div>
+
+  <audio id="win-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_5be63f3cb9.mp3"></audio>
+  <audio id="lose-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_6c9b2fcb56.mp3"></audio>
+  <audio id="draw-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_1aef82c3f7.mp3"></audio>
 
   <script>
     let userScore = 0;
     let compScore = 0;
     let player = "You";
 
-    const userScoreEl = document.getElementById("user-score");
-    const compScoreEl = document.getElementById("comp-score");
-    const resultEl = document.getElementById("result");
-
-    const winSound = document.getElementById("win-sound");
-    const loseSound = document.getElementById("lose-sound");
-    const drawSound = document.getElementById("draw-sound");
-
     function startGame() {
       const nameInput = document.getElementById("player-name").value.trim();
       player = nameInput || "You";
       document.getElementById("name-screen").style.display = "none";
+      document.getElementById("game-area").style.display = "block";
       document.getElementById("welcome-msg").innerText = `Welcome, ${player}! 🎮`;
       document.getElementById("welcome-msg").style.display = "block";
-      document.getElementById("game").style.display = "block";
       updateScore();
+      updateLeaderboard();
     }
 
-    function playGame(userChoice) {
+    function play(userChoice) {
       const choices = ["rock", "paper", "scissors"];
       const compChoice = choices[Math.floor(Math.random() * 3)];
+      const resultText = document.getElementById("result");
+      let result = "";
 
       if (userChoice === compChoice) {
-        resultEl.innerText = `Draw! Both chose ${userChoice}`;
-        drawSound.play();
+        result = "It's a draw!";
+        document.getElementById("draw-sound").play();
       } else if (
         (userChoice === "rock" && compChoice === "scissors") ||
         (userChoice === "paper" && compChoice === "rock") ||
         (userChoice === "scissors" && compChoice === "paper")
       ) {
         userScore++;
-        resultEl.innerText = `${player} wins! ${userChoice} beats ${compChoice}`;
-        winSound.play();
+        result = `${player} wins this round!`;
+        document.getElementById("win-sound").play();
       } else {
         compScore++;
-        resultEl.innerText = `Computer wins! ${compChoice} beats ${userChoice}`;
-        loseSound.play();
+        result = "Computer wins this round!";
+        document.getElementById("lose-sound").play();
       }
+
+      resultText.innerText = result;
       updateScore();
+      updateLeaderboard();
     }
 
     function updateScore() {
-      userScoreEl.innerText = `${player}: ${userScore}`;
-      compScoreEl.innerText = `Computer: ${compScore}`;
+      document.getElementById("user-score").innerText = `${player}: ${userScore}`;
+      document.getElementById("comp-score").innerText = `Computer: ${compScore}`;
     }
 
     function resetGame() {
+      saveToLeaderboard();
       userScore = 0;
       compScore = 0;
-      resultEl.innerText = "Make your move!";
       updateScore();
+      updateLeaderboard();
+      document.getElementById("result").innerText = "";
     }
 
-    document.getElementById("theme-toggle").addEventListener("change", () => {
-      document.body.classList.toggle("dark-mode");
-    });
+    function toggleTheme() {
+      document.body.classList.toggle("light-mode");
+      const logo = document.getElementById("irys-logo");
+      if (document.body.classList.contains("light-mode")) {
+        logo.src = "https://irys.xyz/logo-dark.svg";
+      } else {
+        logo.src = "https://irys.xyz/logo-light.svg";
+      }
+    }
+
+    function saveToLeaderboard() {
+      let data = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+      data.push({ name: player, score: userScore });
+      data.sort((a, b) => b.score - a.score);
+      data = data.slice(0, 5);
+      localStorage.setItem("leaderboard", JSON.stringify(data));
+    }
+
+    function updateLeaderboard() {
+      const list = document.getElementById("leaderboard-list");
+      list.innerHTML = "";
+      const data = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+      data.forEach(entry => {
+        const li = document.createElement("li");
+        li.innerText = `${entry.name}: ${entry.score}`;
+        list.appendChild(li);
+      });
+    }
   </script>
 </body>
 </html>
