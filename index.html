@@ -1,125 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Irys Game - Rock Paper Scissors</title>
+  <meta charset="UTF-8">
+  <title>Irys Game – Rock Paper Scissors</title>
   <style>
     body {
+      font-family: 'Segoe UI', sans-serif;
       text-align: center;
-      font-family: sans-serif;
-      background: #f4f4f4;
-      padding: 50px;
-      transition: 0.3s ease;
+      background-color: #f0f4ff;
+      padding: 40px 10px;
     }
-
-    button {
-      margin: 10px;
-      font-size: 20px;
-      padding: 10px 20px;
+    h1 {
+      color: #444;
+      margin-bottom: 10px;
     }
-
-    .scoreboard {
+    .buttons button {
       font-size: 18px;
-      margin-top: 20px;
-      color: #333;
-    }
-
-    .dark-mode {
-      background-color: #121212;
-      color: #ffffff;
-    }
-
-    .dark-mode button {
-      background-color: #333;
-      color: #fff;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 12px;
       border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    .buttons button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      font-size: 22px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .score {
+      font-size: 20px;
+      margin-top: 20px;
+    }
+    .reset-btn {
+      margin-top: 25px;
+      padding: 8px 16px;
+      font-size: 16px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .reset-btn:hover {
+      background-color: #a51d2d;
     }
   </style>
 </head>
 <body>
 
-  <h1>🪨📄✂️ Irys Rock Paper Scissors Game</h1>
+  <h1>Irys Game – Rock Paper Scissors</h1>
 
-  <div>
-    <button onclick="play('rock')">🪨 Rock</button>
-    <button onclick="play('paper')">📄 Paper</button>
-    <button onclick="play('scissors')">✂️ Scissors</button>
-    <button onclick="resetScore()">🔁 Reset Score</button>
-    <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+  <div class="buttons">
+    <button onclick="playGame('rock')">🪨 Rock</button>
+    <button onclick="playGame('paper')">📄 Paper</button>
+    <button onclick="playGame('scissors')">✂️ Scissors</button>
   </div>
 
-  <div class="scoreboard">
-    🧑 You: <span id="user-score">0</span> |
-    🖥️ Computer: <span id="computer-score">0</span>
+  <div id="result"></div>
+  <div class="score">
+    🧍 You: <span id="user-score">0</span> | 🤖 Computer: <span id="computer-score">0</span>
   </div>
 
-  <h2 id="result">Make your move!</h2>
+  <button class="reset-btn" onclick="resetGame()">🔄 Reset</button>
+
+  <!-- 🔊 Sound Effects -->
+  <audio id="winSound" src="https://www.soundjay.com/buttons/sounds/button-4.mp3" preload="auto"></audio>
+  <audio id="loseSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
+  <audio id="drawSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
 
   <script>
     let userScore = 0;
     let computerScore = 0;
 
-    function play(userChoice) {
-      const choices = ["rock", "paper", "scissors"];
+    function playGame(userChoice) {
+      const choices = ['rock', 'paper', 'scissors'];
       const computerChoice = choices[Math.floor(Math.random() * 3)];
-
-      let winner = "";
+      let result = '';
 
       if (userChoice === computerChoice) {
-        winner = "draw";
+        result = "🤝 It's a draw!";
+        document.getElementById("drawSound").play();
       } else if (
-        (userChoice === "rock" && computerChoice === "scissors") ||
-        (userChoice === "paper" && computerChoice === "rock") ||
-        (userChoice === "scissors" && computerChoice === "paper")
+        (userChoice === 'rock' && computerChoice === 'scissors') ||
+        (userChoice === 'paper' && computerChoice === 'rock') ||
+        (userChoice === 'scissors' && computerChoice === 'paper')
       ) {
-        winner = "user";
-      } else {
-        winner = "computer";
-      }
-
-      const result = document.getElementById("result");
-
-      if (winner === "user") {
+        result = "🎉 You win!";
         userScore++;
-        result.innerHTML = `🎉 You Win! ${userChoice} beats ${computerChoice}`;
-        playSound("win");
-      } else if (winner === "computer") {
-        computerScore++;
-        result.innerHTML = `💀 You Lose! ${computerChoice} beats ${userChoice}`;
-        playSound("lose");
+        document.getElementById("winSound").play();
       } else {
-        result.innerHTML = `😐 It's a draw! You both chose ${userChoice}`;
-        playSound("draw");
+        result = "💀 Computer wins!";
+        computerScore++;
+        document.getElementById("loseSound").play();
       }
 
-      document.getElementById("user-score").textContent = userScore;
-      document.getElementById("computer-score").textContent = computerScore;
+      document.getElementById("result").innerText =
+        `You chose ${userChoice} | Computer chose ${computerChoice} → ${result}`;
+      document.getElementById("user-score").innerText = userScore;
+      document.getElementById("computer-score").innerText = computerScore;
     }
 
-    function resetScore() {
+    function resetGame() {
       userScore = 0;
       computerScore = 0;
-      document.getElementById("user-score").textContent = userScore;
-      document.getElementById("computer-score").textContent = computerScore;
-      document.getElementById("result").innerHTML = "Scores reset! Play again.";
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark-mode");
-    }
-
-    function playSound(type) {
-      const audio = new Audio();
-      if (type === "win") {
-        audio.src = "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg";
-      } else if (type === "lose") {
-        audio.src = "https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg";
-      } else {
-        audio.src = "https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg";
-      }
-      audio.play();
+      document.getElementById("result").innerText = '';
+      document.getElementById("user-score").innerText = '0';
+      document.getElementById("computer-score").innerText = '0';
     }
   </script>
-
 </body>
 </html>
-Replaced old version with Irys Game full version
