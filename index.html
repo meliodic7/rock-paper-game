@@ -2,166 +2,159 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Irys Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Irys Game - Rock Paper Scissors</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-    }
-    .light-mode {
+      font-family: 'Segoe UI', sans-serif;
       background-color: #f4f4f4;
-      color: #000;
+      color: #333;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s, color 0.3s;
     }
-    .game-container {
-      margin-top: 20px;
+    .dark-mode {
+      background-color: #111;
+      color: #fff;
+    }
+    header {
+      padding: 1rem;
+    }
+    img.logo {
+      height: 50px;
+      margin-bottom: 10px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 1rem;
     }
     button {
       padding: 10px 20px;
       margin: 10px;
+      border: none;
+      border-radius: 10px;
       font-size: 16px;
       cursor: pointer;
-      border-radius: 8px;
-      border: none;
+      background: #6200ea;
+      color: #fff;
     }
-    #leaderboard {
-      margin-top: 30px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 15px;
-      border-radius: 10px;
+    button:hover {
+      background: #3700b3;
     }
-    input[type="text"] {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      margin: 10px;
+    .result, .scoreboard {
+      margin-top: 1rem;
+    }
+    .leaderboard {
+      margin-top: 2rem;
+    }
+    .dark-mode button {
+      background: #bb86fc;
+      color: #000;
     }
   </style>
 </head>
 <body>
-  <img id="irys-logo" src="https://irys.xyz/logo-light.svg" alt="Irys Logo" style="height: 60px; margin-bottom: 10px;" />
-  <h1>Irys Game 🎮</h1>
+  <header>
+    <img src="https://irys.xyz/logo-light.svg" alt="Irys Logo" class="logo"/>
+    <h1>Irys Game 🎮 - Rock Paper Scissors</h1>
+    <label>
+      <input type="checkbox" id="themeToggle" />
+      Dark Mode
+    </label>
+  </header>
 
-  <div id="name-screen">
-    <input type="text" id="player-name" placeholder="Enter your name" />
-    <button onclick="startGame()">Start</button>
-  </div>
-
-  <h2 id="welcome-msg" style="display: none;"></h2>
-
-  <div class="game-container" id="game-area" style="display: none;">
-    <p id="user-score">Player: 0</p>
-    <p id="comp-score">Computer: 0</p>
-
+  <div class="container">
+    <input type="text" id="playerName" placeholder="Enter your name" />
     <div>
       <button onclick="play('rock')">🪨 Rock</button>
       <button onclick="play('paper')">📄 Paper</button>
       <button onclick="play('scissors')">✂️ Scissors</button>
     </div>
-
-    <p id="result"></p>
-    <button onclick="resetGame()">Reset</button>
-    <button onclick="toggleTheme()">Toggle Theme</button>
+    <div class="result" id="result"></div>
+    <div class="scoreboard">
+      <p>Score: <span id="score">0</span></p>
+      <button onclick="resetGame()">🔄 Reset</button>
+    </div>
+    <div class="leaderboard" id="leaderboard">
+      <h3>🏆 Top Players</h3>
+      <ul id="leaderList"></ul>
+    </div>
   </div>
 
-  <div id="leaderboard">
-    <h3>🏆 Leaderboard</h3>
-    <ol id="leaderboard-list"></ol>
-  </div>
-
-  <audio id="win-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_5be63f3cb9.mp3"></audio>
-  <audio id="lose-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_6c9b2fcb56.mp3"></audio>
-  <audio id="draw-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_1aef82c3f7.mp3"></audio>
+  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.wav"></audio>
 
   <script>
-    let userScore = 0;
-    let compScore = 0;
-    let player = "You";
+    let score = 0;
+    let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
-    function startGame() {
-      const nameInput = document.getElementById("player-name").value.trim();
-      player = nameInput || "You";
-      document.getElementById("name-screen").style.display = "none";
-      document.getElementById("game-area").style.display = "block";
-      document.getElementById("welcome-msg").innerText = `Welcome, ${player}! 🎮`;
-      document.getElementById("welcome-msg").style.display = "block";
-      updateScore();
-      updateLeaderboard();
-    }
+    const choices = ["rock", "paper", "scissors"];
+    const resultDiv = document.getElementById("result");
+    const scoreSpan = document.getElementById("score");
+    const leaderList = document.getElementById("leaderList");
+    const clickSound = document.getElementById("clickSound");
+
+    document.getElementById("themeToggle").addEventListener("change", function () {
+      document.body.classList.toggle("dark-mode", this.checked);
+    });
 
     function play(userChoice) {
-      const choices = ["rock", "paper", "scissors"];
-      const compChoice = choices[Math.floor(Math.random() * 3)];
-      const resultText = document.getElementById("result");
-      let result = "";
+      const playerName = document.getElementById("playerName").value || "Anonymous";
+      const computerChoice = choices[Math.floor(Math.random() * choices.length)];
+      clickSound.play();
 
-      if (userChoice === compChoice) {
-        result = "It's a draw!";
-        document.getElementById("draw-sound").play();
+      let result = "";
+      if (userChoice === computerChoice) {
+        result = `It's a draw! 😐 You both chose ${userChoice}`;
       } else if (
-        (userChoice === "rock" && compChoice === "scissors") ||
-        (userChoice === "paper" && compChoice === "rock") ||
-        (userChoice === "scissors" && compChoice === "paper")
+        (userChoice === "rock" && computerChoice === "scissors") ||
+        (userChoice === "paper" && computerChoice === "rock") ||
+        (userChoice === "scissors" && computerChoice === "paper")
       ) {
-        userScore++;
-        result = `${player} wins this round!`;
-        document.getElementById("win-sound").play();
+        result = `You win! 🎉 ${userChoice} beats ${computerChoice}`;
+        score++;
       } else {
-        compScore++;
-        result = "Computer wins this round!";
-        document.getElementById("lose-sound").play();
+        result = `You lose! 💀 ${computerChoice} beats ${userChoice}`;
+        score = Math.max(0, score - 1);
       }
 
-      resultText.innerText = result;
-      updateScore();
-      updateLeaderboard();
-    }
+      resultDiv.textContent = result;
+      scoreSpan.textContent = score;
 
-    function updateScore() {
-      document.getElementById("user-score").innerText = `${player}: ${userScore}`;
-      document.getElementById("comp-score").innerText = `Computer: ${compScore}`;
+      updateLeaderboard(playerName, score);
     }
 
     function resetGame() {
-      saveToLeaderboard();
-      userScore = 0;
-      compScore = 0;
-      updateScore();
-      updateLeaderboard();
-      document.getElementById("result").innerText = "";
+      score = 0;
+      scoreSpan.textContent = score;
+      resultDiv.textContent = "";
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle("light-mode");
-      const logo = document.getElementById("irys-logo");
-      if (document.body.classList.contains("light-mode")) {
-        logo.src = "https://irys.xyz/logo-dark.svg";
+    function updateLeaderboard(name, score) {
+      let found = leaderboard.find(player => player.name === name);
+      if (found) {
+        found.score = Math.max(found.score, score);
       } else {
-        logo.src = "https://irys.xyz/logo-light.svg";
+        leaderboard.push({ name, score });
       }
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, 5);
+      localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+      displayLeaderboard();
     }
 
-    function saveToLeaderboard() {
-      let data = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-      data.push({ name: player, score: userScore });
-      data.sort((a, b) => b.score - a.score);
-      data = data.slice(0, 5);
-      localStorage.setItem("leaderboard", JSON.stringify(data));
-    }
-
-    function updateLeaderboard() {
-      const list = document.getElementById("leaderboard-list");
-      list.innerHTML = "";
-      const data = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-      data.forEach(entry => {
+    function displayLeaderboard() {
+      leaderList.innerHTML = "";
+      leaderboard.forEach((player, index) => {
         const li = document.createElement("li");
-        li.innerText = `${entry.name}: ${entry.score}`;
-        list.appendChild(li);
+        li.textContent = `${index + 1}. ${player.name} - ${player.score}`;
+        leaderList.appendChild(li);
       });
     }
+
+    // Init
+    displayLeaderboard();
   </script>
 </body>
 </html>
