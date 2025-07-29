@@ -8,65 +8,118 @@
       font-family: sans-serif;
       background: #f4f4f4;
       padding: 50px;
+      transition: 0.3s ease;
     }
+
     button {
       margin: 10px;
       font-size: 20px;
       padding: 10px 20px;
     }
+
     .scoreboard {
       font-size: 18px;
       margin-top: 20px;
       color: #333;
     }
+
+    .dark-mode {
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    .dark-mode button {
+      background-color: #333;
+      color: #fff;
+      border: none;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Irys Game - Rock Paper Scissors</h1>
+  <h1>🪨📄✂️ Irys Rock Paper Scissors Game</h1>
 
-  <button onclick="play('rock')">🪨 Rock</button>
-  <button onclick="play('paper')">📄 Paper</button>
-  <button onclick="play('scissors')">✂️ Scissors</button>
-
-  <h2 id="result"></h2>
+  <div>
+    <button onclick="play('rock')">🪨 Rock</button>
+    <button onclick="play('paper')">📄 Paper</button>
+    <button onclick="play('scissors')">✂️ Scissors</button>
+    <button onclick="resetScore()">🔁 Reset Score</button>
+    <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+  </div>
 
   <div class="scoreboard">
-    👤 You: <span id="user-score">0</span> |
-    🤖 Computer: <span id="computer-score">0</span>
+    🧑 You: <span id="user-score">0</span> |
+    🖥️ Computer: <span id="computer-score">0</span>
   </div>
+
+  <h2 id="result">Make your move!</h2>
 
   <script>
     let userScore = 0;
     let computerScore = 0;
 
     function play(userChoice) {
-      const choices = ['rock', 'paper', 'scissors'];
-      const computerChoice = choices[Math.floor(Math.random() * choices.length)];
-      let result = '';
+      const choices = ["rock", "paper", "scissors"];
+      const computerChoice = choices[Math.floor(Math.random() * 3)];
+
+      let winner = "";
 
       if (userChoice === computerChoice) {
-        result = "It's a draw!";
+        winner = "draw";
       } else if (
-        (userChoice === 'rock' && computerChoice === 'scissors') ||
-        (userChoice === 'paper' && computerChoice === 'rock') ||
-        (userChoice === 'scissors' && computerChoice === 'paper')
+        (userChoice === "rock" && computerChoice === "scissors") ||
+        (userChoice === "paper" && computerChoice === "rock") ||
+        (userChoice === "scissors" && computerChoice === "paper")
       ) {
-        result = "You win!";
-        userScore++;
+        winner = "user";
       } else {
-        result = "Computer wins!";
-        computerScore++;
+        winner = "computer";
       }
 
-      document.getElementById("result").innerHTML =
-        `You chose <b>${userChoice}</b> <br>Computer chose <b>${computerChoice}</b><br><strong>${result}</strong>`;
+      const result = document.getElementById("result");
+
+      if (winner === "user") {
+        userScore++;
+        result.innerHTML = `🎉 You Win! ${userChoice} beats ${computerChoice}`;
+        playSound("win");
+      } else if (winner === "computer") {
+        computerScore++;
+        result.innerHTML = `💀 You Lose! ${computerChoice} beats ${userChoice}`;
+        playSound("lose");
+      } else {
+        result.innerHTML = `😐 It's a draw! You both chose ${userChoice}`;
+        playSound("draw");
+      }
 
       document.getElementById("user-score").textContent = userScore;
       document.getElementById("computer-score").textContent = computerScore;
+    }
+
+    function resetScore() {
+      userScore = 0;
+      computerScore = 0;
+      document.getElementById("user-score").textContent = userScore;
+      document.getElementById("computer-score").textContent = computerScore;
+      document.getElementById("result").innerHTML = "Scores reset! Play again.";
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    function playSound(type) {
+      const audio = new Audio();
+      if (type === "win") {
+        audio.src = "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg";
+      } else if (type === "lose") {
+        audio.src = "https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg";
+      } else {
+        audio.src = "https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg";
+      }
+      audio.play();
     }
   </script>
 
 </body>
 </html>
-
+Replaced old version with Irys Game full version
