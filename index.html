@@ -3,35 +3,67 @@
 <head>
   <title>Rock Paper Scissors</title>
   <style>
-    body { text-align: center; font-family: sans-serif; background: #f4f4f4; padding: 50px; }
-    button { margin: 10px; font-size: 20px; padding: 10px 20px; }
+    body {
+      text-align: center;
+      font-family: sans-serif;
+      background: #f4f4f4;
+      padding: 50px;
+    }
+    button {
+      margin: 10px;
+      font-size: 20px;
+      padding: 10px 20px;
+    }
+    .scoreboard {
+      margin-top: 20px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
   <h1>Rock Paper Scissors</h1>
+
   <button onclick="play('rock')">🪨 Rock</button>
   <button onclick="play('paper')">📄 Paper</button>
   <button onclick="play('scissors')">✂️ Scissors</button>
+
   <h2 id="result"></h2>
 
+  <div class="scoreboard">
+    👤 You: <span id="user-score">0</span> |
+    🤖 Computer: <span id="computer-score">0</span>
+  </div>
+
   <script>
+    let userScore = 0;
+    let computerScore = 0;
+
     function play(userChoice) {
       const choices = ['rock', 'paper', 'scissors'];
-      const computerChoice = choices[Math.floor(Math.random() * 3)];
+      const computerChoice = choices[Math.floor(Math.random() * choices.length)];
       let result = '';
-      if (userChoice === computerChoice) result = "It's a tie!";
-      else if (
+
+      if (userChoice === computerChoice) {
+        result = "It's a draw!";
+      } else if (
         (userChoice === 'rock' && computerChoice === 'scissors') ||
         (userChoice === 'paper' && computerChoice === 'rock') ||
         (userChoice === 'scissors' && computerChoice === 'paper')
-      ) result = "You win!";
-      else result = "You lose!";
-      document.getElementById("result").innerHTML = `
-        You chose <b>${userChoice}</b><br>
-        Computer chose <b>${computerChoice}</b><br>
-        <strong>${result}</strong>
-      `;
+      ) {
+        result = "You win!";
+        userScore++;
+      } else {
+        result = "Computer wins!";
+        computerScore++;
+      }
+
+      document.getElementById("result").innerHTML =
+        `You chose <b>${userChoice}</b><br>Computer chose <b>${computerChoice}</b><br><strong>${result}</strong>`;
+
+      document.getElementById("user-score").textContent = userScore;
+      document.getElementById("computer-score").textContent = computerScore;
     }
   </script>
 </body>
 </html>
+commit Add scoreboard
