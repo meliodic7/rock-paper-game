@@ -2,116 +2,195 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Irys Game – Rock Paper Scissors</title>
+  <title>Irys Game</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       text-align: center;
-      background-color: #f0f4ff;
-      padding: 40px 10px;
+      background-color: #f5f5f5;
+      color: #222;
+      padding: 20px;
     }
-    h1 {
-      color: #444;
-      margin-bottom: 10px;
+
+    body.dark-mode {
+      background-color: #121212;
+      color: #f5f5f5;
     }
-    .buttons button {
-      font-size: 18px;
+
+    .game-btn {
+      font-size: 24px;
       padding: 10px 20px;
       margin: 10px;
-      border-radius: 12px;
+      border-radius: 10px;
       border: none;
+      cursor: pointer;
       background-color: #007bff;
       color: white;
-      cursor: pointer;
     }
-    .buttons button:hover {
-      background-color: #0056b3;
-    }
-    #result {
-      font-size: 22px;
-      margin-top: 20px;
-      font-weight: bold;
-    }
-    .score {
-      font-size: 20px;
-      margin-top: 20px;
-    }
-    .reset-btn {
-      margin-top: 25px;
-      padding: 8px 16px;
-      font-size: 16px;
-      background-color: #dc3545;
+
+    body.dark-mode .game-btn {
+      background-color: #333;
       color: white;
-      border: none;
-      border-radius: 10px;
+    }
+
+    #result, #user-score, #comp-score {
+      font-size: 20px;
+      margin: 10px;
+    }
+
+    .switch {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      display: inline-block;
+      position: relative;
       cursor: pointer;
     }
-    .reset-btn:hover {
-      background-color: #a51d2d;
+
+    .slider::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
+    }
+
+    input:checked + .slider::before {
+      transform: translateX(20px);
+    }
+
+    input:checked + .slider {
+      background-color: #333;
+    }
+
+    #name-screen {
+      margin-top: 40px;
+    }
+
+    #name-screen input {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px;
+    }
+
+    #name-screen button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <h1>Irys Game – Rock Paper Scissors</h1>
+  <!-- 🌙 Dark Mode Toggle -->
+  <label class="switch">
+    <input type="checkbox" id="theme-toggle">
+    <span class="slider round"></span>
+  </label>
 
-  <div class="buttons">
-    <button onclick="playGame('rock')">🪨 Rock</button>
-    <button onclick="playGame('paper')">📄 Paper</button>
-    <button onclick="playGame('scissors')">✂️ Scissors</button>
+  <!-- 🎮 Name Entry -->
+  <div id="name-screen">
+    <input type="text" id="player-name" placeholder="Enter your name" />
+    <button onclick="startGame()">Start</button>
   </div>
 
-  <div id="result"></div>
-  <div class="score">
-    🧍 You: <span id="user-score">0</span> | 🤖 Computer: <span id="computer-score">0</span>
+  <!-- 👋 Welcome Message -->
+  <h2 id="welcome-msg" style="display: none;"></h2>
+
+  <!-- 🧠 Game UI -->
+  <div id="game" style="display: none;">
+    <button class="game-btn" onclick="playGame('rock')">🪨 Rock</button>
+    <button class="game-btn" onclick="playGame('paper')">📄 Paper</button>
+    <button class="game-btn" onclick="playGame('scissors')">✂️ Scissors</button>
+
+    <p id="result">Make your move!</p>
+    <p id="user-score">Player: 0</p>
+    <p id="comp-score">Computer: 0</p>
+
+    <button onclick="resetGame()">🔄 Reset</button>
   </div>
 
-  <button class="reset-btn" onclick="resetGame()">🔄 Reset</button>
-
-  <!-- 🔊 Sound Effects -->
-  <audio id="winSound" src="https://www.soundjay.com/buttons/sounds/button-4.mp3" preload="auto"></audio>
-  <audio id="loseSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
-  <audio id="drawSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+  <audio id="win-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="lose-sound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
+  <audio id="draw-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
   <script>
     let userScore = 0;
-    let computerScore = 0;
+    let compScore = 0;
+    let player = "You";
+
+    const userScoreEl = document.getElementById("user-score");
+    const compScoreEl = document.getElementById("comp-score");
+    const resultEl = document.getElementById("result");
+
+    const winSound = document.getElementById("win-sound");
+    const loseSound = document.getElementById("lose-sound");
+    const drawSound = document.getElementById("draw-sound");
+
+    function startGame() {
+      const nameInput = document.getElementById("player-name").value.trim();
+      player = nameInput || "You";
+      document.getElementById("name-screen").style.display = "none";
+      document.getElementById("welcome-msg").innerText = `Welcome, ${player}! 🎮`;
+      document.getElementById("welcome-msg").style.display = "block";
+      document.getElementById("game").style.display = "block";
+      updateScore();
+    }
 
     function playGame(userChoice) {
-      const choices = ['rock', 'paper', 'scissors'];
-      const computerChoice = choices[Math.floor(Math.random() * 3)];
-      let result = '';
+      const choices = ["rock", "paper", "scissors"];
+      const compChoice = choices[Math.floor(Math.random() * 3)];
 
-      if (userChoice === computerChoice) {
-        result = "🤝 It's a draw!";
-        document.getElementById("drawSound").play();
+      if (userChoice === compChoice) {
+        resultEl.innerText = `Draw! Both chose ${userChoice}`;
+        drawSound.play();
       } else if (
-        (userChoice === 'rock' && computerChoice === 'scissors') ||
-        (userChoice === 'paper' && computerChoice === 'rock') ||
-        (userChoice === 'scissors' && computerChoice === 'paper')
+        (userChoice === "rock" && compChoice === "scissors") ||
+        (userChoice === "paper" && compChoice === "rock") ||
+        (userChoice === "scissors" && compChoice === "paper")
       ) {
-        result = "🎉 You win!";
         userScore++;
-        document.getElementById("winSound").play();
+        resultEl.innerText = `${player} wins! ${userChoice} beats ${compChoice}`;
+        winSound.play();
       } else {
-        result = "💀 Computer wins!";
-        computerScore++;
-        document.getElementById("loseSound").play();
+        compScore++;
+        resultEl.innerText = `Computer wins! ${compChoice} beats ${userChoice}`;
+        loseSound.play();
       }
+      updateScore();
+    }
 
-      document.getElementById("result").innerText =
-        `You chose ${userChoice} | Computer chose ${computerChoice} → ${result}`;
-      document.getElementById("user-score").innerText = userScore;
-      document.getElementById("computer-score").innerText = computerScore;
+    function updateScore() {
+      userScoreEl.innerText = `${player}: ${userScore}`;
+      compScoreEl.innerText = `Computer: ${compScore}`;
     }
 
     function resetGame() {
       userScore = 0;
-      computerScore = 0;
-      document.getElementById("result").innerText = '';
-      document.getElementById("user-score").innerText = '0';
-      document.getElementById("computer-score").innerText = '0';
+      compScore = 0;
+      resultEl.innerText = "Make your move!";
+      updateScore();
     }
+
+    document.getElementById("theme-toggle").addEventListener("change", () => {
+      document.body.classList.toggle("dark-mode");
+    });
   </script>
 </body>
 </html>
