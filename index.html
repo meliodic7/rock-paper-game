@@ -3,161 +3,149 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Irys Game - Rock Paper Scissors</title>
+  <title>Irys Rock Paper Scissors</title>
   <style>
     body {
-      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #2d1e5f, #652ec7);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 1rem;
-    }
-    h1 {
+      background-color: #0b0c2a;
+      color: #ffffff;
       text-align: center;
-      margin-top: 1rem;
+      padding: 20px;
     }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+
     .logo {
-      height: 80px;
-      margin-bottom: 10px;
+      width: 180px;
+      margin: 20px auto;
+      display: block;
     }
-    .input-section, .game, .scoreboard, .leaderboard {
-      margin-top: 20px;
-      text-align: center;
+
+    h1 {
+      color: #96f2d7;
     }
-    .buttons button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-radius: 10px;
+
+    .input-area input {
+      padding: 10px;
+      width: 60%;
       border: none;
-      cursor: pointer;
-      background-color: #fff;
-      color: #652ec7;
-      font-weight: bold;
-    }
-    .dark-mode {
-      background: linear-gradient(135deg, #0f0f0f, #1e1e2f);
-      color: #f0f0f0;
-    }
-    .controls {
+      border-radius: 5px;
       margin-top: 10px;
     }
-    .leaderboard {
-      background-color: rgba(255, 255, 255, 0.1);
-      padding: 10px;
-      border-radius: 12px;
-      margin-top: 1rem;
-      width: 100%;
-      max-width: 300px;
+
+    .input-area button {
+      padding: 10px 20px;
+      margin-left: 5px;
+      background-color: #00f0ff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #000;
     }
-    .sprite {
-      height: 100px;
+
+    .choices button {
+      margin: 10px;
+      padding: 15px;
+      font-size: 20px;
+      background-color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .choices button:hover {
+      background-color: #00f0ff;
+      color: black;
+    }
+
+    .result {
+      font-size: 18px;
+      margin-top: 15px;
+    }
+
+    .scoreboard {
       margin-top: 20px;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Irys_logo.svg/512px-Irys_logo.svg.png" alt="Irys Logo" />
-  <h1>Irys Rock-Paper-Scissors</h1>
+  <div class="container">
+    <img src="https://i.ibb.co/WGgM3K6/irys-trust.png" alt="Irys Logo" class="logo" />
+    <h1>Rock Paper Scissors ✨</h1>
 
-  <div class="input-section">
-    <input id="playerName" placeholder="Enter your name" />
-    <button onclick="startGame()">Start Game</button>
-  </div>
+    <div class="input-area">
+      <input type="text" id="playerName" placeholder="Enter your name" />
+      <button onclick="startGame()">Start</button>
+    </div>
 
-  <div class="game" style="display:none;">
-    <h2 id="welcomeText"></h2>
-    <div class="buttons">
-      <button onclick="play('rock')">🪨 Rock</button>
-      <button onclick="play('paper')">📄 Paper</button>
-      <button onclick="play('scissors')">✂️ Scissors</button>
-    </div>
-    <p id="result"></p>
-    <div class="scoreboard">
-      <p>Score: <span id="score">0</span></p>
-      <button onclick="resetGame()">Reset</button>
-      <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-    </div>
-    <div class="leaderboard">
-      <h3>Leaderboard</h3>
-      <ul id="leaderboardList"></ul>
+    <div id="gameArea" class="hidden">
+      <p id="greeting"></p>
+      <div class="choices">
+        <button onclick="play('rock')">✊ Rock</button>
+        <button onclick="play('paper')">✋ Paper</button>
+        <button onclick="play('scissors')">✌️ Scissors</button>
+      </div>
+      <div class="result" id="resultText"></div>
+      <div class="scoreboard">
+        <p><strong>Score:</strong> <span id="score">0</span></p>
+        <button onclick="resetScore()">Reset</button>
+      </div>
     </div>
   </div>
 
-  <img class="sprite" src="https://i.ibb.co/hDBVrQ4/irys-sprite.png" alt="Irys Sprite">
-
-  <audio id="sound-rock" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-mechanical-bling-210.wav"></audio>
-  <audio id="sound-paper" src="https://assets.mixkit.co/sfx/preview/mixkit-game-notification-wave-231.wav"></audio>
-  <audio id="sound-scissors" src="https://assets.mixkit.co/sfx/preview/mixkit-quick-win-video-game-notification-269.wav"></audio>
+  <!-- Sound effects -->
+  <audio id="winSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_2f7ce3294b.mp3"></audio>
+  <audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_f83f5d7b44.mp3"></audio>
+  <audio id="drawSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9b88b6890c.mp3"></audio>
 
   <script>
     let score = 0;
-    const leaderboard = [];
 
     function startGame() {
       const name = document.getElementById('playerName').value.trim();
-      if (!name) return alert("Please enter your name!");
-      document.querySelector('.game').style.display = "block";
-      document.querySelector('.input-section').style.display = "none";
-      document.getElementById('welcomeText').innerText = `Welcome, ${name}!`;
+      if (name === "") return alert("Enter your name!");
+
+      document.getElementById('greeting').innerText = `Hello, ${name}! Let’s play.`;
+      document.getElementById('gameArea').classList.remove('hidden');
     }
 
-    function play(userChoice) {
+    function play(playerChoice) {
       const choices = ['rock', 'paper', 'scissors'];
-      const computerChoice = choices[Math.floor(Math.random() * 3)];
+      const compChoice = choices[Math.floor(Math.random() * 3)];
 
-      const sound = document.getElementById(`sound-${userChoice}`);
-      if (sound) sound.play();
-
-      let resultText = `Computer chose ${computerChoice}. `;
-
-      if (userChoice === computerChoice) {
-        resultText += "It's a draw!";
+      let result;
+      if (playerChoice === compChoice) {
+        result = "It's a draw!";
+        document.getElementById("drawSound").play();
       } else if (
-        (userChoice === 'rock' && computerChoice === 'scissors') ||
-        (userChoice === 'paper' && computerChoice === 'rock') ||
-        (userChoice === 'scissors' && computerChoice === 'paper')
+        (playerChoice === 'rock' && compChoice === 'scissors') ||
+        (playerChoice === 'paper' && compChoice === 'rock') ||
+        (playerChoice === 'scissors' && compChoice === 'paper')
       ) {
-        resultText += "You win!";
+        result = `You Win! ${playerChoice} beats ${compChoice}`;
         score++;
+        document.getElementById("winSound").play();
       } else {
-        resultText += "You lose!";
-        score = Math.max(0, score - 1);
+        result = `You Lose! ${compChoice} beats ${playerChoice}`;
+        score--;
+        document.getElementById("loseSound").play();
       }
 
-      document.getElementById('result').innerText = resultText;
+      document.getElementById('resultText').innerText = result;
       document.getElementById('score').innerText = score;
-      updateLeaderboard();
     }
 
-    function resetGame() {
+    function resetScore() {
       score = 0;
       document.getElementById('score').innerText = score;
-      document.getElementById('result').innerText = '';
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-    }
-
-    function updateLeaderboard() {
-      const name = document.getElementById('playerName').value.trim();
-      const index = leaderboard.findIndex(entry => entry.name === name);
-
-      if (index >= 0) {
-        leaderboard[index].score = score;
-      } else {
-        leaderboard.push({ name, score });
-      }
-
-      leaderboard.sort((a, b) => b.score - a.score);
-      const list = leaderboard.map(entry => `<li>${entry.name}: ${entry.score}</li>`).join('');
-      document.getElementById('leaderboardList').innerHTML = list;
     }
   </script>
 </body>
