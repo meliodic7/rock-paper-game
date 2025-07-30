@@ -3,158 +3,194 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Irys Game - Rock Paper Scissors</title>
+  <title>Irys Game 💜</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
+      font-family: 'Quicksand', sans-serif;
+      background-color: #0f0f1b;
+      color: white;
       text-align: center;
       margin: 0;
       padding: 0;
-      transition: background 0.3s, color 0.3s;
     }
-    .dark-mode {
-      background-color: #111;
-      color: #fff;
-    }
+
     header {
+      background-color: #7a5cff;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    header img {
+      height: 40px;
+    }
+
+    h1 {
+      margin: 1rem 0 0.5rem;
+      font-size: 2rem;
+    }
+
+    .player-name {
+      margin: 1rem;
+    }
+
+    .game-area {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
       padding: 1rem;
     }
-    img.logo {
-      height: 50px;
-      margin-bottom: 10px;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      padding: 1rem;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
+
+    .buttons button {
+      font-size: 1.2rem;
+      padding: 0.8rem 1.5rem;
+      margin: 0.5rem;
       border: none;
       border-radius: 10px;
-      font-size: 16px;
+      background-color: #7a5cff;
+      color: white;
       cursor: pointer;
-      background: #6200ea;
-      color: #fff;
+      transition: 0.3s;
     }
-    button:hover {
-      background: #3700b3;
+
+    .buttons button:hover {
+      background-color: #a392ff;
     }
-    .result, .scoreboard {
+
+    .result, .score, .player {
       margin-top: 1rem;
+      font-size: 1.2rem;
     }
-    .leaderboard {
-      margin-top: 2rem;
+
+    .controls {
+      margin: 2rem 0;
     }
-    .dark-mode button {
-      background: #bb86fc;
-      color: #000;
+
+    .toggle-mode {
+      background: transparent;
+      border: 2px solid #7a5cff;
+      color: #7a5cff;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .toggle-mode:hover {
+      background-color: #7a5cff;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5rem; }
+      .buttons button { font-size: 1rem; padding: 0.5rem 1rem; }
     }
   </style>
 </head>
 <body>
+
   <header>
-    <img src="https://irys.xyz/logo-light.svg" alt="Irys Logo" class="logo"/>
-    <h1>Irys Game 🎮 - Rock Paper Scissors</h1>
-    <label>
-      <input type="checkbox" id="themeToggle" />
-      Dark Mode
-    </label>
+    <img src="irys-logo.png" alt="Irys Logo" />
+    <h1>Irys Game</h1>
   </header>
 
-  <div class="container">
-    <input type="text" id="playerName" placeholder="Enter your name" />
-    <div>
+  <div class="player-name">
+    <label for="name">Enter your name: </label>
+    <input type="text" id="name" placeholder="Player1" />
+    <button onclick="setPlayerName()">Start</button>
+  </div>
+
+  <div class="game-area">
+    <div class="player" id="playerDisplay"></div>
+
+    <div class="buttons">
       <button onclick="play('rock')">🪨 Rock</button>
       <button onclick="play('paper')">📄 Paper</button>
       <button onclick="play('scissors')">✂️ Scissors</button>
     </div>
-    <div class="result" id="result"></div>
-    <div class="scoreboard">
-      <p>Score: <span id="score">0</span></p>
-      <button onclick="resetGame()">🔄 Reset</button>
-    </div>
-    <div class="leaderboard" id="leaderboard">
-      <h3>🏆 Top Players</h3>
-      <ul id="leaderList"></ul>
+
+    <div class="result" id="resultText"></div>
+    <div class="score" id="scoreBoard">Score: 0 Wins | 0 Losses | 0 Draws</div>
+
+    <div class="controls">
+      <button onclick="resetGame()">🔁 Reset</button>
+      <button class="toggle-mode" onclick="toggleDarkMode()">🌗 Toggle Dark Mode</button>
     </div>
   </div>
 
-  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.wav"></audio>
+  <audio id="moveSound" src="sounds/move.mp3"></audio>
+  <audio id="winSound" src="sounds/win.mp3"></audio>
+  <audio id="loseSound" src="sounds/lose.mp3"></audio>
 
   <script>
-    let score = 0;
-    let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    let wins = 0, losses = 0, draws = 0;
+    let playerName = '';
 
-    const choices = ["rock", "paper", "scissors"];
-    const resultDiv = document.getElementById("result");
-    const scoreSpan = document.getElementById("score");
-    const leaderList = document.getElementById("leaderList");
-    const clickSound = document.getElementById("clickSound");
+    function setPlayerName() {
+      const nameInput = document.getElementById('name');
+      playerName = nameInput.value || 'Player';
+      document.getElementById('playerDisplay').textContent = `Hello, ${playerName}! Let’s play.`;
+    }
 
-    document.getElementById("themeToggle").addEventListener("change", function () {
-      document.body.classList.toggle("dark-mode", this.checked);
-    });
+    function play(playerChoice) {
+      const moves = ['rock', 'paper', 'scissors'];
+      const computerChoice = moves[Math.floor(Math.random() * 3)];
+      const result = getResult(playerChoice, computerChoice);
 
-    function play(userChoice) {
-      const playerName = document.getElementById("playerName").value || "Anonymous";
-      const computerChoice = choices[Math.floor(Math.random() * choices.length)];
-      clickSound.play();
+      document.getElementById('moveSound').play();
 
-      let result = "";
-      if (userChoice === computerChoice) {
-        result = `It's a draw! 😐 You both chose ${userChoice}`;
-      } else if (
-        (userChoice === "rock" && computerChoice === "scissors") ||
-        (userChoice === "paper" && computerChoice === "rock") ||
-        (userChoice === "scissors" && computerChoice === "paper")
-      ) {
-        result = `You win! 🎉 ${userChoice} beats ${computerChoice}`;
-        score++;
+      if (result === 'win') {
+        wins++;
+        document.getElementById('resultText').textContent = `You chose ${playerChoice}, computer chose ${computerChoice}. You WIN! 🎉`;
+        document.getElementById('winSound').play();
+      } else if (result === 'lose') {
+        losses++;
+        document.getElementById('resultText').textContent = `You chose ${playerChoice}, computer chose ${computerChoice}. You LOSE! 😢`;
+        document.getElementById('loseSound').play();
       } else {
-        result = `You lose! 💀 ${computerChoice} beats ${userChoice}`;
-        score = Math.max(0, score - 1);
+        draws++;
+        document.getElementById('resultText').textContent = `Both chose ${playerChoice}. It’s a DRAW! 🤝`;
       }
 
-      resultDiv.textContent = result;
-      scoreSpan.textContent = score;
+      updateScore();
+    }
 
-      updateLeaderboard(playerName, score);
+    function getResult(player, computer) {
+      if (player === computer) return 'draw';
+      if ((player === 'rock' && computer === 'scissors') ||
+          (player === 'paper' && computer === 'rock') ||
+          (player === 'scissors' && computer === 'paper')) {
+        return 'win';
+      }
+      return 'lose';
+    }
+
+    function updateScore() {
+      document.getElementById('scoreBoard').textContent = 
+        `Score: ${wins} Wins | ${losses} Losses | ${draws} Draws`;
     }
 
     function resetGame() {
-      score = 0;
-      scoreSpan.textContent = score;
-      resultDiv.textContent = "";
+      wins = 0;
+      losses = 0;
+      draws = 0;
+      updateScore();
+      document.getElementById('resultText').textContent = '';
     }
 
-    function updateLeaderboard(name, score) {
-      let found = leaderboard.find(player => player.name === name);
-      if (found) {
-        found.score = Math.max(found.score, score);
+    function toggleDarkMode() {
+      const body = document.body;
+      if (body.style.backgroundColor === 'white') {
+        body.style.backgroundColor = '#0f0f1b';
+        body.style.color = 'white';
       } else {
-        leaderboard.push({ name, score });
+        body.style.backgroundColor = 'white';
+        body.style.color = '#111';
       }
-      leaderboard.sort((a, b) => b.score - a.score);
-      leaderboard = leaderboard.slice(0, 5);
-      localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-      displayLeaderboard();
     }
-
-    function displayLeaderboard() {
-      leaderList.innerHTML = "";
-      leaderboard.forEach((player, index) => {
-        const li = document.createElement("li");
-        li.textContent = `${index + 1}. ${player.name} - ${player.score}`;
-        leaderList.appendChild(li);
-      });
-    }
-
-    // Init
-    displayLeaderboard();
   </script>
 </body>
 </html>
