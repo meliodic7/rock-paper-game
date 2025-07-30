@@ -1,152 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Irys Rock Paper Scissors</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Irys Game - Rock Paper Scissors</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #0b0c2a;
-      color: #ffffff;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 500px;
-      margin: auto;
-    }
-
-    .logo {
-      width: 180px;
-      margin: 20px auto;
-      display: block;
+      background-color: #1a1a2e;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
     }
 
     h1 {
-      color: #96f2d7;
+      color: #ff4cc2;
     }
 
-    .input-area input {
-      padding: 10px;
-      width: 60%;
-      border: none;
-      border-radius: 5px;
-      margin-top: 10px;
+    #logo {
+      width: 100px;
+      margin-bottom: 20px;
     }
 
-    .input-area button {
-      padding: 10px 20px;
-      margin-left: 5px;
-      background-color: #00f0ff;
+    .game-section {
+      background: #16213e;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(255, 76, 194, 0.3);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .score {
+      margin: 1rem 0;
+    }
+
+    button {
+      margin: 0.5rem;
+      padding: 0.6rem 1.2rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
+      background: #ff4cc2;
+      color: #fff;
+      font-size: 1rem;
       cursor: pointer;
-      color: #000;
+      transition: 0.3s ease;
     }
 
-    .choices button {
-      margin: 10px;
-      padding: 15px;
-      font-size: 20px;
-      background-color: #ffffff;
+    button:hover {
+      background: #e342b8;
+    }
+
+    input {
+      padding: 0.5rem;
+      border-radius: 6px;
       border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.2s;
+      margin-bottom: 1rem;
     }
 
-    .choices button:hover {
-      background-color: #00f0ff;
-      color: black;
+    #dark-toggle {
+      background: #0f3460;
+      color: #fff;
+      margin-top: 1rem;
     }
 
-    .result {
-      font-size: 18px;
-      margin-top: 15px;
-    }
-
-    .scoreboard {
-      margin-top: 20px;
-    }
-
-    .hidden {
-      display: none;
+    @media (max-width: 500px) {
+      .game-section {
+        padding: 1rem;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <img src="https://i.ibb.co/WGgM3K6/irys-trust.png" alt="Irys Logo" class="logo" />
-    <h1>Rock Paper Scissors ✨</h1>
+  <img id="logo" src="https://rock-paper-game-1n2w.vercel.app/irys-logo.png" alt="Irys Logo">
+  <h1>Rock Paper Scissors - Irys Game</h1>
 
-    <div class="input-area">
-      <input type="text" id="playerName" placeholder="Enter your name" />
-      <button onclick="startGame()">Start</button>
+  <div class="game-section">
+    <input type="text" id="playerName" placeholder="Enter your name" /><br />
+    <p id="greeting">Welcome! Let's play 🎮</p>
+
+    <div class="score">
+      <p><strong>Score:</strong> <span id="score">0</span></p>
     </div>
 
-    <div id="gameArea" class="hidden">
-      <p id="greeting"></p>
-      <div class="choices">
-        <button onclick="play('rock')">✊ Rock</button>
-        <button onclick="play('paper')">✋ Paper</button>
-        <button onclick="play('scissors')">✌️ Scissors</button>
-      </div>
-      <div class="result" id="resultText"></div>
-      <div class="scoreboard">
-        <p><strong>Score:</strong> <span id="score">0</span></p>
-        <button onclick="resetScore()">Reset</button>
-      </div>
+    <div>
+      <button onclick="play('rock')">Rock</button>
+      <button onclick="play('paper')">Paper</button>
+      <button onclick="play('scissors')">Scissors</button>
     </div>
+
+    <p id="result"></p>
+    <button onclick="resetGame()">Reset</button>
+    <button id="dark-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
   </div>
-
-  <!-- Sound effects -->
-  <audio id="winSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_2f7ce3294b.mp3"></audio>
-  <audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_f83f5d7b44.mp3"></audio>
-  <audio id="drawSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9b88b6890c.mp3"></audio>
 
   <script>
     let score = 0;
+    const scoreSpan = document.getElementById("score");
+    const resultP = document.getElementById("result");
+    const playerNameInput = document.getElementById("playerName");
+    const greeting = document.getElementById("greeting");
 
-    function startGame() {
-      const name = document.getElementById('playerName').value.trim();
-      if (name === "") return alert("Enter your name!");
-
-      document.getElementById('greeting').innerText = `Hello, ${name}! Let’s play.`;
-      document.getElementById('gameArea').classList.remove('hidden');
-    }
+    playerNameInput.addEventListener('input', () => {
+      greeting.textContent = `Welcome, ${playerNameInput.value}! Let's play 🎮`;
+    });
 
     function play(playerChoice) {
       const choices = ['rock', 'paper', 'scissors'];
-      const compChoice = choices[Math.floor(Math.random() * 3)];
-
+      const computerChoice = choices[Math.floor(Math.random() * 3)];
       let result;
-      if (playerChoice === compChoice) {
+
+      if (playerChoice === computerChoice) {
         result = "It's a draw!";
-        document.getElementById("drawSound").play();
+        playSound("draw");
       } else if (
-        (playerChoice === 'rock' && compChoice === 'scissors') ||
-        (playerChoice === 'paper' && compChoice === 'rock') ||
-        (playerChoice === 'scissors' && compChoice === 'paper')
+        (playerChoice === 'rock' && computerChoice === 'scissors') ||
+        (playerChoice === 'paper' && computerChoice === 'rock') ||
+        (playerChoice === 'scissors' && computerChoice === 'paper')
       ) {
-        result = `You Win! ${playerChoice} beats ${compChoice}`;
+        result = "You win!";
         score++;
-        document.getElementById("winSound").play();
+        playSound("win");
       } else {
-        result = `You Lose! ${compChoice} beats ${playerChoice}`;
+        result = "You lose!";
         score--;
-        document.getElementById("loseSound").play();
+        playSound("lose");
       }
 
-      document.getElementById('resultText').innerText = result;
-      document.getElementById('score').innerText = score;
+      resultP.textContent = `${playerChoice} vs ${computerChoice} → ${result}`;
+      scoreSpan.textContent = score;
     }
 
-    function resetScore() {
+    function resetGame() {
       score = 0;
-      document.getElementById('score').innerText = score;
+      scoreSpan.textContent = score;
+      resultP.textContent = '';
+      playerNameInput.value = '';
+      greeting.textContent = "Welcome! Let's play 🎮";
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+      document.body.style.backgroundColor = document.body.classList.contains("dark") ? "#0f0f0f" : "#1a1a2e";
+    }
+
+    function playSound(type) {
+      const audio = new Audio(`${type}.mp3`);
+      audio.play();
     }
   </script>
 </body>
+
 </html>
